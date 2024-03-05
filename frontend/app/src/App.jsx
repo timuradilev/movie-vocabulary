@@ -1,35 +1,17 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import './App.css'
+import WordList from './WordList.jsx'
 
 function App() {
-  const [count, setCount] = useState(0)
-
-  return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    const words = [
+        {id: 'word1', left: 'left txt dasdsadsadas', middle: 'word1', right: 'right txt'},
+        {id: 'word2', left: 'left txt', middle: 'wordfdsfsdd2', right: 'right txtdsfsdfd'},
+        {id: 'word3', left: 'left txt', middle: 'word3', right: 'right txt'},
+        {id: 'word4', left: 'ldsffdsfsdfdseft txt', middle: 'word4', right: 'right txtdsfds'},
+        {id: 'word5', left: 'left txt', middle: 'word5', right: 'right txt'}
+    ];
+    return (
+        <WordList category="A1" items={words}/>
+    )
 }
 
 export default App
