@@ -23,6 +23,11 @@ gateway-build:
 gateway-run:
 	docker run --rm -d --name gateway -p 8080:8080 gateway
 
+# stop gateway
+.PHONY: gateway-stop
+gateway-stop:
+	docker stop gateway
+
 # build backend
 .PHONY: backend-build
 backend-build:
@@ -31,7 +36,7 @@ backend-build:
 # run backend server
 .PHONY: backend-run
 backend-run:
-	symfony server:start --dir=${PWD}/backend/app -d
+	symfony server:start --dir=${PWD}/backend/app -d --port=8081
 
 .PHONY: backend-stop
 backend-stop:
