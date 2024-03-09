@@ -10,7 +10,7 @@ function App() {
     useEffect(() => {
         const fetchWords = async () => {
             try {
-                const response = await api.get('/words.json');
+                const response = await api.get('/words');
                 setCategory(response.data.category);
                 setWords(response.data.words);
             } catch (err) {
