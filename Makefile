@@ -8,6 +8,11 @@ frontend-build:
 frontend-run:
 	docker run --rm -d --name frontend -v ${PWD}/frontend/app:/app -p 5173:5173 frontend sh -c "npm i ; npm run dev -- --host"
 
+# stop frontend
+.PHONY: frontend-stop
+frontend-stop:
+	docker stop frontend
+
 # install npm packages
 .PHONY: frontend-npm-install
 frontend-npm-install:
