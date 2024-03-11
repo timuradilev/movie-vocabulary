@@ -4,15 +4,13 @@ import api from './api/words'
 import React, {useState, useEffect} from 'react';
 
 function App() {
-    const [category, setCategory] = useState('');
-    const [words, setWords] = useState([]);
+    const [wordLists, setWordLists] = useState([]);
 
     useEffect(() => {
         const fetchWords = async () => {
             try {
                 const response = await api.get('/words');
-                setCategory(response.data.category);
-                setWords(response.data.words);
+                setWordLists(response.data);
             } catch (err) {
                 if (err.response) {
                     console.log(err.response);
@@ -24,9 +22,12 @@ function App() {
         
         fetchWords();
     }, [])
+
+    const wordListsComponents = wordLists.map(list => <WordList category={list.category} items={list.words}/>)
+
     return (
-        <WordList category={category} items={words}/>
-    )
+        <div>{wordListsComponents}</div>
+    );
 }
 
 export default App
