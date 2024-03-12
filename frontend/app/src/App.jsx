@@ -23,7 +23,7 @@ function App() {
         fetchWords();
     }, [])
 
-    const wordListsComponents = wordLists.map(list => <WordList category={list.category} items={list.words}/>)
+    const wordListsComponents = wordLists.map(list => <WordList key={list.category} category={list.category} items={list.words}/>)
 
     return (
         <div>{wordListsComponents}</div>
