@@ -15,29 +15,32 @@ final class Extractor {
 	}
 
 	/**
-	 * @param list<SubtitleLine> $subtitleLines
+	 * @param list<string> $subtitleLines
 	 * @return list<Word>
 	 */
 	public function getWords(array $subtitleLines): array {
-		$filtered = [];
+		$filteredLines = [];
 		foreach ($subtitleLines as $subtitleLine) {
 			foreach ($this->filters as $filter) {
 				$subtitleLine = $filter->filter($subtitleLine);
-				if ($subtitleLine->text === '') {
+				if ($subtitleLine === null) {
 					break;
 				}
 			}
 
-			if ($subtitleLine->text !== '') {
-				$filtered[] = $subtitleLine;
+			if ($subtitleLine !== null) {
+				$filteredLines[] = $subtitleLine;
 			}
 		}
 
+		$subtitleLines = array_map(static fn (string $line): SubtitleLine => new SubtitleLine($line), $filteredLines);
+
 		$words = [];
-		foreach ($filtered as $subtitleLine) {
+		foreach ($subtitleLines as $subtitleLine) {
 			foreach ($this->extractors as $extractor) {
 				$words[] = $extractor->extract($subtitleLine);
-				if ($subtitleLine->text === '') {
+				$subtitleLine->rewind();
+				if (!$subtitleLine->valid()) {
 					break;
 				}
 			}

@@ -5,7 +5,7 @@ namespace App\Extractor;
 interface ExtractorInterface {
 
 	/**
-	 * @return list<SubtitleLine>
+	 * @return list<Word>
 	 */
 	public function extract(SubtitleLine $subtitleLine): array;
 

@@ -15,7 +15,7 @@ final class SrtLoader {
 	}
 
 	/**
-	 * @return list<SubtitleLine>
+	 * @return list<string>
 	 */
 	public function getSubtitleLines(): array {
 		$lines = [];
@@ -53,7 +53,7 @@ final class SrtLoader {
 
 			if (trim($line) === '') {
 				if ($subtitleLine !== '') {
-					$lines[] = new SubtitleLine(trim($subtitleLine));
+					$lines[] = trim($subtitleLine);
 					$subtitleLine = '';
 				}
 			} elseif (preg_match('/^\d+$/', $line) !== 1 && preg_match('/^\d+:\d+:\d+,\d+ --> \d+:\d+:\d+,\d+/', $line) !== 1) {
@@ -63,7 +63,7 @@ final class SrtLoader {
 		} while (true);
 
 		if ($subtitleLine !== '') {
-			$lines[] = new SubtitleLine(trim($subtitleLine));
+			$lines[] = trim($subtitleLine);
 		}
 
 		fclose($file);

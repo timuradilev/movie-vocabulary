@@ -7,9 +7,8 @@ use App\Extractor\SubtitleLine;
 
 final class ItalicTagFilter implements FilterInterface {
 
-	public function filter(SubtitleLine $subtitleLine): SubtitleLine {
-		$subtitleLine->text = preg_replace('/(<i>)|(<\/i>)/', '', $subtitleLine->text);
-		return $subtitleLine;
+	public function filter(string $subtitleLine): string {
+		return preg_replace('/(<i>)|(<\/i>)/', '', $subtitleLine);
 	}
 
 }
