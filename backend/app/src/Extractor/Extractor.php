@@ -43,7 +43,13 @@ final class Extractor {
 			}
 		}
 
-		return array_merge(...$words);
+		$words = array_merge(...$words);
+		$deduplicatedWords = [];
+		foreach ($words as $word) {
+			$deduplicatedWords[$word->word] = $word;
+		}
+
+		return array_values($deduplicatedWords);
 	}
 
 }
