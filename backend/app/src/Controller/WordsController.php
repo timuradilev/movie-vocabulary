@@ -7,15 +7,23 @@ use App\Extractor\Extractors\A1Extractor;
 use App\Extractor\Filters\ItalicTagFilter;
 use App\Loader\SrtLoader;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 
 final class WordsController extends AbstractController {
 
-	#[Route('/api/words', name: 'words')]
-	public function words(): JsonResponse {
-		$filename = $this->getParameter('kernel.project_dir') . '/data/subtitles.srt';
-		$srtLoader = new SrtLoader($filename);
+	#[Route('/api/words/', name: 'words')]
+	public function words(Request $request): JsonResponse {
+		$filename = (string)$request->get('filename');
+		if ($filename === '') {
+			throw new BadRequestHttpException('filename not given');
+		}
+
+		$filePath = $this->getParameter('kernel.project_dir') . "/var/subtitles/{$filename}";
+		$srtLoader = new SrtLoader($filePath);
 		$subtitleLines = $srtLoader->getSubtitleLines();
 
 		$extractor = new Extractor([new ItalicTagFilter()], [new A1Extractor($this->getParameter('kernel.project_dir') . '/data/word_lists/A1.php')]);
@@ -35,5 +43,28 @@ final class WordsController extends AbstractController {
 		}
 		$response = array_values($response);
 		return $this->json($response);
+	}
+
+	#[Route('/api/upload', name: 'upload')]
+	public function upload(Request $request): JsonResponse {
+		/**
+		 * @var ?UploadedFile $file
+		 */
+		$file = $request->files->get('file');
+		if ($file === null) {
+			throw new BadRequestHttpException('no file given');
+		}
+
+		if ($file->getClientOriginalExtension() !== 'srt') {
+			throw new BadRequestHttpException('only srt files are supported');
+		}
+
+		if ($file->getSize() > 1_000_000) {
+			throw new BadRequestHttpException('file is too big');
+		}
+		
+		$file->move($this->getParameter('kernel.project_dir') . '/var/subtitles/', $file->getClientOriginalName());
+
+		return $this->json([]);
 	}
 }
