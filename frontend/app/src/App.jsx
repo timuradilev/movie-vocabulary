@@ -14,9 +14,8 @@ function App() {
         } catch (err) {
             if (err.response) {
                 console.log(err.response);
-            } else {
-                console.log(`Error: ${err.message}`);
             }
+            alert(`Error: ${err.message}`);
         }
     }
 
@@ -40,10 +39,9 @@ function App() {
             setCurrentSubtitles(file.name);
         } catch (err) {
             if (err.response) {
-                console.log(err.response);
-            } else {
-                console.log(`Error: ${err.message}`);
+               console.log(err.response);
             }
+            alert(`Error: ${err.message}`);
         }
     }
 

@@ -7,6 +7,7 @@ use App\Extractor\Extractors\A1Extractor;
 use App\Extractor\Filters\ItalicTagFilter;
 use App\Loader\SrtLoader;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -62,8 +63,11 @@ final class WordsController extends AbstractController {
 		if ($file->getSize() > 1_000_000) {
 			throw new BadRequestHttpException('file is too big');
 		}
-		
-		$file->move($this->getParameter('kernel.project_dir') . '/var/subtitles/', $file->getClientOriginalName());
+		try {
+			$file->move($this->getParameter('kernel.project_dir') . '/var/subtitles/', $file->getClientOriginalName());
+		} catch (FileException $ex) {
+			return $this->json(['error' => 'something went wrong when trying to upload the file'], 500);
+		}
 
 		return $this->json([]);
 	}
