@@ -29,7 +29,7 @@ final class SrtLoader {
 				if (preg_match('/(\n)/', $buffer, $matches, PREG_OFFSET_CAPTURE) > 0) {
 					$origin = $buffer;
 					$buffer = substr($buffer, $matches[1][1] + strlen($matches[1][0]));
-					return substr($origin, 0, $matches[1][1]);
+					return trim(substr($origin, 0, $matches[1][1]));
 				}
 				if (feof($file)) {
 					if ($buffer !== '') {
@@ -51,19 +51,18 @@ final class SrtLoader {
 				break;
 			}
 
-			if (trim($line) === '') {
+			if ($line === '') {
 				if ($subtitleLine !== '') {
 					$lines[] = trim($subtitleLine);
 					$subtitleLine = '';
 				}
 			} elseif (preg_match('/^\d+$/', $line) !== 1 && preg_match('/^\d+:\d+:\d+,\d+ --> \d+:\d+:\d+,\d+/', $line) !== 1) {
-				$line = trim($line);
 				$subtitleLine .= " {$line}";
 			}
 		} while (true);
 
 		if ($subtitleLine !== '') {
-			$lines[] = trim($subtitleLine);
+			$lines[] = $subtitleLine;
 		}
 
 		fclose($file);
