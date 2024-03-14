@@ -23,7 +23,7 @@ final class WordsController extends AbstractController {
 			throw new BadRequestHttpException('filename not given');
 		}
 
-		$filePath = $this->getParameter('kernel.project_dir') . "/var/subtitles/{$filename}";
+		$filePath = $this->getParameter('kernel.project_dir') . "/var/subtitles/{$filename}.srt";
 		$srtLoader = new SrtLoader($filePath);
 		$subtitleLines = $srtLoader->getSubtitleLines();
 
@@ -70,5 +70,18 @@ final class WordsController extends AbstractController {
 		}
 
 		return $this->json([]);
+	}
+
+	#[Route('/api/subtitles', 'subtitles')]
+	public function getFiles(): JsonResponse {
+		$files = scandir($this->getParameter('kernel.project_dir') . '/var/subtitles/');
+		if ($files === false) {
+			throw new \UnexpectedValueException('could not list the files in the subtitles directory');
+		}
+
+		$files = array_values(array_diff($files, ['.', '..']));
+		$files = array_map(static fn (string $file): string => str_replace('.srt', '', $file), $files);
+
+		return $this->json($files);
 	}
 }

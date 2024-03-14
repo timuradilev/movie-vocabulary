@@ -32,3 +32,14 @@
 .word-list-right-text {
     color: lightgray;
 }
+
+.subtitles-list {
+    display: flex;
+    flex-direction: row;
+    list-style-type: none;
+}
+
+.subtitles-list-item:hover{
+    cursor: pointer;
+    color: coral;
+}
