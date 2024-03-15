@@ -46,3 +46,11 @@ backend-run:
 .PHONY: backend-stop
 backend-stop:
 	symfony server:stop --dir=${PWD}/backend/app
+
+.PHONY: postgresql-run
+postgresql-run:
+	docker run --rm --name=postgres -e POSTGRES_PASSWORD=movie_subtitles_pass -v mv_pgdata:/var/lib/data -p 5432:5432 -d postgres:16.2-alpine3.19
+
+.PHONY: postgresql-stop
+postgresql-stop:
+	docker stop postgres
