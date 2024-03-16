@@ -9,6 +9,7 @@ use App\Extractor\Extractors\A1Extractor;
 use App\Extractor\Filters\ItalicTagFilter;
 use App\Loader\SrtLoader;
 use App\Repository\SubtitlesFileRepository;
+use App\Repository\WordRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
@@ -65,6 +66,7 @@ final class WordsController extends AbstractController {
 		$subtitlesFile = new SubtitlesFile();
 		$subtitlesFile->setName($name);
 		$subtitlesFile->setStoragePath($storagePath);
+		$subtitlesFile->setCreatedTs(time());
 		$entityManager->persist($subtitlesFile);
 		$entityManager->flush();
 
@@ -89,7 +91,7 @@ final class WordsController extends AbstractController {
 	}
 
 	#[Route('/api/subtitles/{subtitlesFileId}', name: 'subtitles_words', requirements: ['subtitles_file_id' => '\d+'])]
-	public function getSubtitlesFilesWords(int $subtitlesFileId, SubtitlesFileRepository $subtitlesFileRepository): JsonResponse {
+	public function getSubtitlesFilesWords(int $subtitlesFileId, SubtitlesFileRepository $subtitlesFileRepository, WordRepository $wordRepository): JsonResponse {
 		if ($subtitlesFileId === 0) {
 			$subtitlesFile = $subtitlesFileRepository->findOneBy([], ['id' => 'DESC']);
 			if ($subtitlesFile === null) {
@@ -109,8 +111,16 @@ final class WordsController extends AbstractController {
 		$extractor = self::getExtractor($this->getParameter('kernel.project_dir'));
 		$words = $extractor->getWords($subtitleLines);
 
+		$wordValues = array_map(static fn (\App\Extractor\Word $word): string => $word->value, $words);
+		$knownWords = $wordRepository->getKnownWords($wordValues, strtotime('-3 months'), $subtitlesFile->getCreatedTs(), $subtitlesFile);
+		$knownWords = array_flip($knownWords);
+
 		$response = [];
 		foreach ($words as $word) {
+			if (\array_key_exists($word->value, $knownWords)) {
+				continue;
+			}
+
 			if (!\array_key_exists($word->category, $response)) {
 				$response[$word->category] = ['category' => $word->category, 'words' => []];
 			}

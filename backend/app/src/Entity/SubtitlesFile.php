@@ -18,6 +18,9 @@ class SubtitlesFile {
     #[ORM\Column(length: 255)]
     private ?string $storage_path = null;
 
+    #[ORM\Column]
+    private ?int $created_ts = null;
+
     public function getId(): ?int {
         return $this->id;
     }
@@ -38,6 +41,16 @@ class SubtitlesFile {
 
     public function setStoragePath(string $storage_path): static {
         $this->storage_path = $storage_path;
+
+        return $this;
+    }
+
+    public function getCreatedTs(): ?int {
+        return $this->created_ts;
+    }
+
+    public function setCreatedTs(int $created_ts): static {
+        $this->created_ts = $created_ts;
 
         return $this;
     }
