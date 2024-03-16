@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\SubtitlesFile;
+use App\Entity\Word;
 use App\Extractor\Extractor;
 use App\Extractor\Extractors\A1Extractor;
 use App\Extractor\Filters\ItalicTagFilter;
@@ -53,9 +54,10 @@ final class WordsController extends AbstractController {
 		}
 
 		$storagePath = uniqid();
+		$storageDirectory = $this->getParameter('kernel.project_dir') . '/var/subtitles/';
 
 		try {
-			$file->move($this->getParameter('kernel.project_dir') . '/var/subtitles/', $storagePath);
+			$file->move($storageDirectory, $storagePath);
 		} catch (FileException $ex) {
 			return $this->json(['error' => 'something went wrong when trying to upload the file'], 500);
 		}
@@ -64,6 +66,23 @@ final class WordsController extends AbstractController {
 		$subtitlesFile->setName($name);
 		$subtitlesFile->setStoragePath($storagePath);
 		$entityManager->persist($subtitlesFile);
+		$entityManager->flush();
+
+		$filePath = "{$storageDirectory}{$subtitlesFile->getStoragePath()}";
+		$srtLoader = new SrtLoader($filePath);
+		$subtitleLines = $srtLoader->getSubtitleLines();
+		
+		$extractor = self::getExtractor($this->getParameter('kernel.project_dir'));
+		$words = $extractor->getWords($subtitleLines);
+
+		foreach ($words as $word) {
+			$wordObject = new Word();
+			$wordObject->setValue($word->value);
+			$wordObject->setCreatedTs(time());
+			$wordObject->setSubtitlesFile($subtitlesFile);
+
+			$entityManager->persist($wordObject);
+		}
 		$entityManager->flush();
 
 		return $this->json(['id' => $subtitlesFile->getId()]);
@@ -87,7 +106,7 @@ final class WordsController extends AbstractController {
 		$srtLoader = new SrtLoader($filePath);
 		$subtitleLines = $srtLoader->getSubtitleLines();
 
-		$extractor = new Extractor([new ItalicTagFilter()], [new A1Extractor($this->getParameter('kernel.project_dir') . '/data/word_lists/A1.php')]);
+		$extractor = self::getExtractor($this->getParameter('kernel.project_dir'));
 		$words = $extractor->getWords($subtitleLines);
 
 		$response = [];
@@ -96,13 +115,17 @@ final class WordsController extends AbstractController {
 				$response[$word->category] = ['category' => $word->category, 'words' => []];
 			}
 			$response[$word->category]['words'][] = [
-				'id' => $word->word,
+				'id' => $word->value,
 				'left' => $word->leftText,
-				'middle' => $word->word,
+				'middle' => $word->value,
 				'right' => $word->rightText,
 			];
 		}
 		$response = array_values($response);
 		return $this->json($response);
+	}
+
+	private static function getExtractor(string $projectDir): Extractor {
+		return new Extractor([new ItalicTagFilter()], [new A1Extractor("{$projectDir}/data/word_lists/A1.php")]);
 	}
 }

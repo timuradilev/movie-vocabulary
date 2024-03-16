@@ -49,7 +49,7 @@ final class Extractor {
 		$words = array_merge(...$words);
 		$deduplicatedWords = [];
 		foreach ($words as $word) {
-			$deduplicatedWords[$word->word] = $word;
+			$deduplicatedWords[$word->value] = $word;
 		}
 
 		return array_values($deduplicatedWords);

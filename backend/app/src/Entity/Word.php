@@ -28,11 +28,11 @@ class Word {
         return $this->id;
     }
 
-    public function getName(): ?string {
+    public function getValue(): ?string {
         return $this->value;
     }
 
-    public function setName(string $value): static {
+    public function setValue(string $value): static {
         $this->value = $value;
 
         return $this;
