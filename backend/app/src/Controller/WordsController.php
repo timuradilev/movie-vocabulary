@@ -2,28 +2,88 @@
 
 namespace App\Controller;
 
+use App\Entity\SubtitlesFile;
 use App\Extractor\Extractor;
 use App\Extractor\Extractors\A1Extractor;
 use App\Extractor\Filters\ItalicTagFilter;
 use App\Loader\SrtLoader;
+use App\Repository\SubtitlesFileRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 
 final class WordsController extends AbstractController {
 
-	#[Route('/api/words/', name: 'words')]
-	public function words(Request $request): JsonResponse {
-		$filename = (string)$request->get('filename');
-		if ($filename === '') {
-			throw new BadRequestHttpException('filename not given');
+	#[Route('/api/subtitles/list', 'subtitles_list')]
+	public function getSubtitlesFiles(SubtitlesFileRepository $repository): JsonResponse {
+		$files = $repository->findBy([], ['id' => 'DESC']);
+		$files = array_map(static fn (SubtitlesFile $file): array => ['id' => $file->getId(), 'name' => $file->getName()], $files);
+
+		return $this->json($files);
+	}
+
+	#[Route('/api/subtitles/upload', name: 'subtitles_upload')]
+	public function uploadSubtitleFile(Request $request, EntityManagerInterface $entityManager): JsonResponse {
+		/**
+		 * @var ?UploadedFile $file
+		 */
+		$file = $request->files->get('file');
+		if ($file === null) {
+			throw new BadRequestHttpException('no file given');
 		}
 
-		$filePath = $this->getParameter('kernel.project_dir') . "/var/subtitles/{$filename}.srt";
+		if ($file->getClientOriginalExtension() !== 'srt') {
+			throw new BadRequestHttpException('only srt files are supported');
+		}
+
+		if ($file->getSize() > 1_000_000) {
+			throw new BadRequestHttpException('file is too big');
+		}
+
+		$replacedCount = 0;
+		$name = str_replace('.srt', '', $file->getClientOriginalName(), $replacedCount);
+		if ($replacedCount === 0) {
+			throw new \AssertionError('could not remove the extension');
+		}
+
+		$storagePath = uniqid();
+
+		try {
+			$file->move($this->getParameter('kernel.project_dir') . '/var/subtitles/', $storagePath);
+		} catch (FileException $ex) {
+			return $this->json(['error' => 'something went wrong when trying to upload the file'], 500);
+		}
+
+		$subtitlesFile = new SubtitlesFile();
+		$subtitlesFile->setName($name);
+		$subtitlesFile->setStoragePath($storagePath);
+		$entityManager->persist($subtitlesFile);
+		$entityManager->flush();
+
+		return $this->json(['id' => $subtitlesFile->getId()]);
+	}
+
+	#[Route('/api/subtitles/{subtitlesFileId}', name: 'subtitles_words', requirements: ['subtitles_file_id' => '\d+'])]
+	public function getSubtitlesFilesWords(int $subtitlesFileId, SubtitlesFileRepository $subtitlesFileRepository): JsonResponse {
+		if ($subtitlesFileId === 0) {
+			$subtitlesFile = $subtitlesFileRepository->findOneBy([], ['id' => 'DESC']);
+			if ($subtitlesFile === null) {
+				return $this->json([]);
+			}
+		} else {
+			$subtitlesFile = $subtitlesFileRepository->find($subtitlesFileId);
+			if ($subtitlesFile === null) {
+				throw new NotFoundHttpException('file not found');
+			}
+		}
+
+		$filePath = $this->getParameter('kernel.project_dir') . "/var/subtitles/{$subtitlesFile->getStoragePath()}";
 		$srtLoader = new SrtLoader($filePath);
 		$subtitleLines = $srtLoader->getSubtitleLines();
 
@@ -44,44 +104,5 @@ final class WordsController extends AbstractController {
 		}
 		$response = array_values($response);
 		return $this->json($response);
-	}
-
-	#[Route('/api/upload', name: 'upload')]
-	public function upload(Request $request): JsonResponse {
-		/**
-		 * @var ?UploadedFile $file
-		 */
-		$file = $request->files->get('file');
-		if ($file === null) {
-			throw new BadRequestHttpException('no file given');
-		}
-
-		if ($file->getClientOriginalExtension() !== 'srt') {
-			throw new BadRequestHttpException('only srt files are supported');
-		}
-
-		if ($file->getSize() > 1_000_000) {
-			throw new BadRequestHttpException('file is too big');
-		}
-		try {
-			$file->move($this->getParameter('kernel.project_dir') . '/var/subtitles/', $file->getClientOriginalName());
-		} catch (FileException $ex) {
-			return $this->json(['error' => 'something went wrong when trying to upload the file'], 500);
-		}
-
-		return $this->json([]);
-	}
-
-	#[Route('/api/subtitles', 'subtitles')]
-	public function getFiles(): JsonResponse {
-		$files = scandir($this->getParameter('kernel.project_dir') . '/var/subtitles/');
-		if ($files === false) {
-			throw new \UnexpectedValueException('could not list the files in the subtitles directory');
-		}
-
-		$files = array_values(array_diff($files, ['.', '..']));
-		$files = array_map(static fn (string $file): string => str_replace('.srt', '', $file), $files);
-
-		return $this->json($files);
 	}
 }

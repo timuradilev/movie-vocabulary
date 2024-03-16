@@ -6,12 +6,12 @@ import SubtitlesList from "./SubtitlesList.jsx";
 
 function App() {
     const [wordLists, setWordLists] = useState([]);
-    const [currentSubtitles, setCurrentSubtitles] = useState('subtitles');
+    const [currentSubtitlesFileId, setCurrentSubtitlesFileId] = useState(0);
     const [subtitles, setSubtitles] = useState([])
 
     const loadSubtitles = async () => {
         try {
-            const response = await api.get('/subtitles');
+            const response = await api.get('/subtitles/list');
 
             setSubtitles(response.data);
         } catch (err) {
@@ -22,9 +22,9 @@ function App() {
         }
     };
 
-    const fetchWords = async (subtitles) => {
+    const fetchWords = async (subtitles_file_id) => {
         try {
-            const response = await api.get(`/words/?filename=${subtitles}`);
+            const response = await api.get(`/subtitles/${subtitles_file_id}`);
             setWordLists(response.data);
         } catch (err) {
             if (err.response) {
@@ -36,8 +36,8 @@ function App() {
 
     useEffect(() => {
         loadSubtitles();
-        fetchWords(currentSubtitles);
-    }, [currentSubtitles])
+        fetchWords(currentSubtitlesFileId);
+    }, [currentSubtitlesFileId])
 
     const wordListsComponents = wordLists.map(list => <WordList key={list.category} category={list.category} items={list.words}/>)
 
@@ -51,8 +51,8 @@ function App() {
         const config = {headers: {'content-type': 'multipart/form-data'}};
 
         try {
-            await api.post('/upload', formData, config);
-            setCurrentSubtitles(file.name.replace('.srt', ''));
+            const response = await api.post('/subtitles/upload', formData, config);
+            setCurrentSubtitlesFileId(response.data.id);
         } catch (err) {
             if (err.response) {
                console.log(err.response);
@@ -62,7 +62,7 @@ function App() {
     }
 
     const chooseSubtitles = (e) => {
-        setCurrentSubtitles(e.target.getAttribute('itemId'))
+        setCurrentSubtitlesFileId(e.target.getAttribute('itemId'))
     };
 
     return (
