@@ -35,10 +35,10 @@ final class Extractor {
 
 		$subtitleLines = array_map(static fn (string $line): SubtitleLine => new SubtitleLine($line), $filteredLines);
 
-		$words = [];
+		$words = array_fill_keys(array_keys($this->extractors), []);
 		foreach ($subtitleLines as $subtitleLine) {
-			foreach ($this->extractors as $extractor) {
-				$words[] = $extractor->extract($subtitleLine);
+			foreach ($this->extractors as $i => $extractor) {
+				$words[$i][] = $extractor->extract($subtitleLine);
 				$subtitleLine->rewind();
 				if (!$subtitleLine->valid()) {
 					break;
@@ -46,7 +46,7 @@ final class Extractor {
 			}
 		}
 
-		$words = array_merge(...$words);
+		$words = array_merge(...array_merge(...$words));
 		$deduplicatedWords = [];
 		foreach ($words as $word) {
 			$deduplicatedWords[$word->value] = $word;
