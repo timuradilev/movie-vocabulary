@@ -25,7 +25,16 @@ function App() {
     const fetchWords = async (subtitles_file_id) => {
         try {
             const response = await api.get(`/subtitles/${subtitles_file_id}`);
-            setWordLists(response.data);
+
+            let lists = {};
+            for (const word of response.data) {
+                if (!(word.category in lists)) {
+                    lists[word.category] = {category: word.category, words: []};
+                }
+                lists[word.category].words.push(word);
+            }
+
+            setWordLists(Object.values(lists));
         } catch (err) {
             if (err.response) {
                 console.log(err.response);

@@ -123,17 +123,15 @@ final class WordsController extends AbstractController {
 				continue;
 			}
 
-			if (!\array_key_exists($word->category, $response)) {
-				$response[$word->category] = ['category' => $word->category, 'words' => []];
-			}
-			$response[$word->category]['words'][] = [
+			$response[] = [
 				'id' => $word->value,
+				'category' => $word->category,
 				'left' => $word->leftText,
 				'middle' => $word->value,
 				'right' => $word->rightText,
 			];
 		}
-		$response = array_values($response);
+
 		return $this->json($response);
 	}
 
