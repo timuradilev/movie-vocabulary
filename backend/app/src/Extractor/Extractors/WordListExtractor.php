@@ -6,9 +6,12 @@ use App\Extractor\ExtractorInterface;
 use App\Extractor\SubtitleLine;
 use App\Extractor\Word;
 
-final class A1Extractor implements ExtractorInterface {
+final class WordListExtractor implements ExtractorInterface {
 
-	public function __construct(private readonly string $wordListFilename) {
+	public function __construct(
+		private readonly string $category,
+		private readonly string $wordListFilename,
+	) {
 	}
 
 	/**
@@ -25,7 +28,7 @@ final class A1Extractor implements ExtractorInterface {
 			if (\array_key_exists($word, $A1words)) {
 				$words[] = new Word(
 					$word,
-					'A1',
+					$this->category,
 					$subtitleLine->getTextToTheLeft($i),
 					$subtitleLine->getTextToTheRight($i),
 				);

@@ -5,8 +5,10 @@ namespace App\Controller;
 use App\Entity\SubtitlesFile;
 use App\Entity\Word;
 use App\Extractor\Extractor;
-use App\Extractor\Extractors\A1Extractor;
+use App\Extractor\Extractors\WordListExtractor;
 use App\Extractor\Filters\ItalicTagFilter;
+use App\Extractor\Filters\LyricsFilter;
+use App\Extractor\Filters\SanitizeFilter;
 use App\Loader\SrtLoader;
 use App\Repository\SubtitlesFileRepository;
 use App\Repository\WordRepository;
@@ -136,6 +138,15 @@ final class WordsController extends AbstractController {
 	}
 
 	private static function getExtractor(string $projectDir): Extractor {
-		return new Extractor([new ItalicTagFilter()], [new A1Extractor("{$projectDir}/data/word_lists/A1.php")]);
+		return new Extractor(
+			[new ItalicTagFilter(), new LyricsFilter(), new SanitizeFilter()],
+			[
+				new WordListExtractor('A1', "{$projectDir}/data/word_lists/A1.php"),
+				new WordListExtractor('A2', "{$projectDir}/data/word_lists/A2.php"),
+				new WordListExtractor('B1', "{$projectDir}/data/word_lists/B1.php"),
+				new WordListExtractor('B2', "{$projectDir}/data/word_lists/B2.php"),
+				new WordListExtractor('C1', "{$projectDir}/data/word_lists/C1.php"),
+			]
+		);
 	}
 }
