@@ -145,6 +145,7 @@ final class WordsController extends AbstractController {
 				new WordListExtractor('B1', "{$projectDir}/data/word_lists/B1.php"),
 				new WordListExtractor('B2', "{$projectDir}/data/word_lists/B2.php"),
 				new WordListExtractor('C1', "{$projectDir}/data/word_lists/C1.php"),
+				new WordListExtractor('Past Particles', "{$projectDir}/data/word_lists/past_particles.php"),
 				new FilteredExtractor(),
 			]
 		);
