@@ -8,10 +8,16 @@ use App\Extractor\Word;
 
 final class WordListExtractor implements ExtractorInterface {
 
+	/**
+	 * @var array<string, int> 
+	 */
+	private array $wordList;
+
 	public function __construct(
 		private readonly string $category,
-		private readonly string $wordListFilename,
+		string $wordListFilename,
 	) {
+		$this->wordList = array_flip(require $wordListFilename);
 	}
 
 	/**
@@ -21,11 +27,8 @@ final class WordListExtractor implements ExtractorInterface {
 	public function extract(SubtitleLine $subtitleLine): array {
 		$words = [];
 
-		$A1words = require $this->wordListFilename;
-		$A1words = array_flip($A1words);
-
 		foreach ($subtitleLine as $i => $word) {
-			if (\array_key_exists($word, $A1words)) {
+			if (\array_key_exists($word, $this->wordList)) {
 				$words[] = new Word(
 					$word,
 					$this->category,
