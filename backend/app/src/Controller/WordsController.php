@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\SubtitlesFile;
 use App\Entity\Word;
 use App\Extractor\Extractor;
+use App\Extractor\Extractors\FilteredExtractor;
 use App\Extractor\Extractors\WordListExtractor;
 use App\Extractor\Filters\ItalicTagFilter;
 use App\Extractor\Filters\LyricsFilter;
@@ -144,6 +145,7 @@ final class WordsController extends AbstractController {
 				new WordListExtractor('B1', "{$projectDir}/data/word_lists/B1.php"),
 				new WordListExtractor('B2', "{$projectDir}/data/word_lists/B2.php"),
 				new WordListExtractor('C1', "{$projectDir}/data/word_lists/C1.php"),
+				new FilteredExtractor(),
 			]
 		);
 	}
