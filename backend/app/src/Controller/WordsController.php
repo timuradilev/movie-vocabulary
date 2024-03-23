@@ -6,6 +6,7 @@ use App\Entity\SubtitlesFile;
 use App\Entity\Word;
 use App\Extractor\Extractor;
 use App\Extractor\Extractors\FilteredExtractor;
+use App\Extractor\Extractors\PatternExtractor;
 use App\Extractor\Extractors\WordListExtractor;
 use App\Extractor\Filters\ItalicTagFilter;
 use App\Extractor\Filters\LyricsFilter;
@@ -146,6 +147,9 @@ final class WordsController extends AbstractController {
 				new WordListExtractor('B2', "{$projectDir}/data/word_lists/B2.php"),
 				new WordListExtractor('C1', "{$projectDir}/data/word_lists/C1.php"),
 				new WordListExtractor('Past Particles', "{$projectDir}/data/word_lists/past_particles.php"),
+				new PatternExtractor('Past Tense', '/(ed|ied)$/i'),
+				new PatternExtractor('Adverbs', '/(ly)$/i'),
+				new PatternExtractor('Continuous', '/(ing)$/i'),
 				new FilteredExtractor(),
 			]
 		);
