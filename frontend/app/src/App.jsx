@@ -2,7 +2,7 @@ import './App.css'
 import WordList from './WordList.jsx'
 import api from './api/words'
 import React, {useState, useEffect} from 'react';
-import SubtitlesList from "./SubtitlesList.jsx";
+import SubtitlesPanel from "./SubtitlesPanel.jsx";
 
 function App() {
     const [wordLists, setWordLists] = useState([]);
@@ -71,15 +71,12 @@ function App() {
     }
 
     const chooseSubtitles = (e) => {
-        setCurrentSubtitlesFileId(e.target.getAttribute('itemId'))
+        setCurrentSubtitlesFileId(e.target.value)
     };
 
     return (
         <>
-            <SubtitlesList subtitles={subtitles} chooseSubtitlesHandler={chooseSubtitles}/>
-            <form>
-                <input type="file" onChange={uploadSubtitles} accept=".srt"/>
-            </form>
+            <SubtitlesPanel subtitles={subtitles} uploadSubtitles={uploadSubtitles} chooseSubtitlesHandler={chooseSubtitles}/>
             <div>{wordListsComponents}</div>
         </>
     );

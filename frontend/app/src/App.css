@@ -43,3 +43,28 @@
     cursor: pointer;
     color: coral;
 }
+
+.subtitles-panel {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 15px;
+    margin: 20px 20px 50px;
+}
+
+.subtitles-panel select {
+    border: none;
+}
+
+.subtitles-panel-upload {
+    text-align: left;
+}
+
+.subtitles-panel-upload input {
+    display: none;
+}
+
+.subtitles-panel-upload label {
+    border: 1px solid #ccc;
+    padding: 5px;
+    cursor: pointer;
+}
