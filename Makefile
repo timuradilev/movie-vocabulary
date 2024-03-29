@@ -22,3 +22,7 @@ migrations-run:
 .PHONY: composer-install
 composer-install:
 	docker compose run --rm backend-php-cli composer install
+
+.PHONY: npm-install
+npm-install:
+	docker compose run --rm frontend npm install
